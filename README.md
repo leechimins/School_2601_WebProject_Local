@@ -4,7 +4,7 @@
 
 ### 제목 양식
 
-{이모지} {작업내용}_{작업자}
+{이모지} {작업파일}: {작업내용}_{작업자}
 
 ### 이모지 종류
 
@@ -16,9 +16,9 @@
 
 ### 커밋 예시
 
-* ✨ 로그인 폼 검증 및 processLogin.jsp 기능 구현
-* 🐛 KeyManager 내 암호화 키 생성 오류 수정
-* 🎨 style.css 내 메인 작업 공간 레이아웃 스타일 수정
+* ✨ processLogin.jsp: 로그인 폼 검증 및  기능 구현
+* 🐛 KeyManager.java: 암호화 키 생성 오류 수정
+* 🎨 style.css: 메인 작업 공간 레이아웃 스타일 수정
 
 ---
 
@@ -32,8 +32,7 @@ src/
 │
 ├── security/
 │   ├── AuthService.java   # 회원가입/로그인 세션 제어 및 패스워드 기반 사설키 복구
-│   ├── KeyManager.java    # CryptoService로 통합
-│   └── CryptoService.java # AES-CBC 암·복호화, RSA 암·복호화, SHA256withRSA 전자서명/검증
+│   └── CryptoService.java # AES 암·복호화, RSA 암·복호화, SHA256withRSA 전자서명/검증 (싱글톤)
 │
 ├── data/
 │   ├── User.java          # 사용자 보안 엔티티 (Hashed PW, Salt, IV, Encrypted Private Key 등)
@@ -41,5 +40,5 @@ src/
 │   ├── UserDB.java        # 가상 인메모리 유저 저장소 (싱글톤)
 │   └── EnvelopeDB.java    # 가상 인메모리 전자봉투 메타데이터 저장소 (싱글톤)
 │
-└── data/letters/          # [물리 디렉터리] 암호화된 편지 본문 바이너리(.dat) 파일 저장소
+└── data/letters/          # 암호화된 편지 본문 바이너리(.txt) 파일 저장소
 ```
