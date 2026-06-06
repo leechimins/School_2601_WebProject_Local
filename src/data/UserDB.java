@@ -40,6 +40,7 @@ public class UserDB {
     		return true;
 		} catch (IOException e) {
 			e.printStackTrace();
+			userMap.remove(user.getId());
 			return false;
 		}
     }

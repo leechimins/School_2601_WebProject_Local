@@ -93,7 +93,6 @@ public class CryptoService {
 		try (FileOutputStream fos = new FileOutputStream(fullPath)) {
 			fos.write(encryptedBytes);
 			fos.flush();
-			diaryCounter++;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
