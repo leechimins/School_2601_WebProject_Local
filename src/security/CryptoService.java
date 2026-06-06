@@ -17,7 +17,6 @@ import java.security.Signature;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.util.Scanner;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -46,11 +45,11 @@ public class CryptoService {
 
 	private static final String ALGORITHM_P = "RSA";
 	private static final int SIZE_P = 1024;
-	
+
 	private static final String ALGORITHM_SIGN = "SHA1withRSA";
 	private static final String ALGORITHM_ENVELOPE = "RSA";
 	private static final String ALGORITHM_HASH = "MD5";
-	
+
 	/*
 	 * ========================================== A. 키 생성
 	 * ==========================================
@@ -111,11 +110,11 @@ public class CryptoService {
 				ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
 			byte[] buffer = new byte[1024];
 	        int bytesRead;
-	        
+
 	        while ((bytesRead = cis.read(buffer)) != -1) {
 	            bos.write(buffer, 0, bytesRead);
 	        }
-	        
+
 	        return bos.toString("UTF-8");
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -163,13 +162,13 @@ public class CryptoService {
 	public byte[] encryptPrivateKey(PrivateKey privateKey, String password, byte[] passwordSalt)
 			throws NoSuchAlgorithmException, UnsupportedEncodingException, NoSuchPaddingException, InvalidKeyException,
 			IllegalBlockSizeException, BadPaddingException {
-		
+
 		// 1. 패스워드와 솔트를 결합하여 16Bytes 해시값 생성
 		MessageDigest md = MessageDigest.getInstance(ALGORITHM_HASH);
 		md.update(password.getBytes());
 		md.update(passwordSalt);
 		byte[] hashSource = md.digest();
-		
+
 		// 2. 비밀키 생성
 		SecretKeySpec passwordBasedKey = new SecretKeySpec(hashSource, ALGORITHM_S);
 
@@ -182,7 +181,7 @@ public class CryptoService {
 
 		return encryptedPrivateKey;
 	}
-	
+
 	// 8. [로그인 성공 시] DB에 저장되어 있던 암호화된 사설키 바이너리를 패스워드 기반 대칭키로 복호화하여 복구합니다.
 	public PrivateKey decryptPrivateKey(User user, String password) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidKeySpecException {
 		// 1. 패스워드와 솔트를 결합하여 16Bytes 해시값 생성
@@ -190,7 +189,7 @@ public class CryptoService {
 		md.update(password.getBytes());
 		md.update(user.getPasswordSalt());
 		byte[] hashSource = md.digest();
-		
+
 		// 2. 비밀키 생성
 		SecretKeySpec passwordBasedKey = new SecretKeySpec(hashSource, ALGORITHM_S);
 
@@ -199,19 +198,19 @@ public class CryptoService {
 		cipher.init(Cipher.DECRYPT_MODE, passwordBasedKey);
 
 		byte[] decryptedKeyBytes = cipher.doFinal(user.getEncryptedPrivateKey());
-		
+
 		// 4. 복호화한 배열을 사설키로 복구
 		PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(decryptedKeyBytes);
 	    KeyFactory keyFactory = KeyFactory.getInstance(ALGORITHM_P);
 	    PrivateKey privateKey = keyFactory.generatePrivate(keySpec);
-	    
+
 	    return privateKey;
 	}
 
 	/* ==========================================
 	 *  E. 전자서명 생성 및 검증 (부인 방지용)
 	 *  ========================================== */
-	
+
 	// 9. 편지 내용에 대해 송신자의 RSA 사설키로 디지털 서명을 생성합니다.
 	public byte[] signData(byte[] data, PrivateKey senderPrivateKey) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
 		Signature sig = Signature.getInstance(ALGORITHM_SIGN);
@@ -227,7 +226,7 @@ public class CryptoService {
 		Signature sig = Signature.getInstance(ALGORITHM_SIGN);
 		sig.initVerify(senderPublicKey);
 		sig.update(data);
-		
+
 		return sig.verify(signature);
 	}
 

@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 public class Envelope implements Serializable {
 	private static final long serialVersionUID = 1L;
-	
+
 	private final String sender;
 	private final String receiver;
 	private final String encryptedFilePath;
@@ -25,5 +25,5 @@ public class Envelope implements Serializable {
 	public String getEncryptedFilePath() { return encryptedFilePath; }
 	public byte[] getEncryptedAESKey() { return encryptedAESKey; }
 	public byte[] getSignature() { return signature; }
-	
+
 }

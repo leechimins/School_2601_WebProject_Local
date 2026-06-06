@@ -1,16 +1,16 @@
 package ui;
 
-import ui.ConsoleView;
-import ui.ConsoleView.Menu;
 import java.util.Scanner;
+
+import ui.ConsoleView.Menu;
 
 public class MainConsole {
 
-	private static String currentUser = null;
+    private static String currentUser = null;
 
     public static void main(String[] args) {
         ConsoleView view = ConsoleView.getInstance();
-        
+
         try (Scanner scanner = new Scanner(System.in, "UTF-8")) {
             boolean isRunning = true;
             while (isRunning) {

@@ -13,7 +13,7 @@ public class ConsoleView {
 
 	public enum Menu {
 		AUTH, MAIN, WRITE, INBOX, READ
-	};
+	}
 
 	public void printMenu(Menu type, String userName) {
 		switch (type) {
