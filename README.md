@@ -37,8 +37,7 @@ src/
 ├── data/
 │   ├── User.java          # 사용자 보안 엔티티 (Hashed PW, Salt, IV, Encrypted Private Key 등)
 │   ├── Envelope.java      # 전자봉투 메타데이터 엔티티 (수신자, 암호화된 AES 키, 서명, IV, 파일경로 등)
-│   ├── UserDB.java        # 가상 인메모리 유저 저장소 (싱글톤)
-│   └── EnvelopeDB.java    # 가상 인메모리 전자봉투 메타데이터 저장소 (싱글톤)
+│   └── LocalDB.java       # 데이터 파일 영속성 및 인메모리 관리 저장소 (싱글톤)
 │
 └── data/letters/          # 암호화된 편지 본문 바이너리(.txt) 파일 저장소
 ```

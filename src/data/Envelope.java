@@ -20,10 +20,24 @@ public class Envelope implements Serializable {
 		this.signature = signature;
 	}
 
-	public String getSender() { return sender; }
-	public String getReceiver() { return receiver; }
-	public String getEncryptedFilePath() { return encryptedFilePath; }
-	public byte[] getEncryptedAESKey() { return encryptedAESKey; }
-	public byte[] getSignature() { return signature; }
+	public String getSender() {
+		return sender;
+	}
+
+	public String getReceiver() {
+		return receiver;
+	}
+
+	public String getEncryptedFilePath() {
+		return encryptedFilePath;
+	}
+
+	public byte[] getEncryptedAESKey() {
+		return encryptedAESKey;
+	}
+
+	public byte[] getSignature() {
+		return signature;
+	}
 
 }
