@@ -30,6 +30,22 @@ public class AuthService {
     }
 
     public boolean register(String id, String password) throws Exception {
+        MessageDigest md = MessageDigest.getInstance(ALGORITHM_HASH);
+        md.update(password.getBytes());
+        byte[] hashedPassword = md.digest();
+
+        byte[] passwordSalt = new byte[16];
+        SecureRandom rd = new SecureRandom();
+        rd.nextBytes(passwordSalt);
+
+        KeyPair keyPair = CryptoService.generateRSAKeyPair();
+        PublicKey publicKey = keyPair.getPublic();
+        PrivateKey privateKey = keyPair.getPrivate();
+
+        byte[] encryptedPrivateKey = CryptoService.encryptPrivateKey(privateKey, password, passwordSalt);
+
+        User user = new User(id, hashedPassword, passwordSalt, publicKey, encryptedPrivateKey);
+        db.addUser(user);
 
         return true;
     }
