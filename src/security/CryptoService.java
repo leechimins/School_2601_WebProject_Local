@@ -12,6 +12,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.Signature;
+import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Scanner;
@@ -43,6 +45,10 @@ public class CryptoService {
 
 	private static final String ALGORITHM_P = "RSA";
 	private static final int SIZE_P = 1024;
+	
+	private static final String ALGORITHM_SIGN = "SHA1withRSA";
+	private static final String ALGORITHM_ENVELOPE = "RSA/ECB/NoPadding";
+	private static final String ALGORITHM_HASH = "MD5";
 
 	// 싱글톤을 써야하는 이유
 	private int diaryCounter = 0;
@@ -126,7 +132,7 @@ public class CryptoService {
 	// 5. [전자봉투 생성] 일회성 AES 비밀키 객체 자체를 수신자의 RSA 공개키로 암호화합니다.
 	public byte[] wrapAESKey(SecretKey secretKey, PublicKey receiverPublicKey) throws NoSuchAlgorithmException,
 			NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-		Cipher cipher = Cipher.getInstance("RSA/ECB/NoPadding");
+		Cipher cipher = Cipher.getInstance(ALGORITHM_ENVELOPE);
 		cipher.init(Cipher.ENCRYPT_MODE, receiverPublicKey);
 
 		byte[] keyBytes = secretKey.getEncoded();
@@ -139,7 +145,7 @@ public class CryptoService {
 	public SecretKey unwrapAESKey(byte[] encryptedSecretKeyBytes, PrivateKey receiverPrivateKey)
 			throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException,
 			BadPaddingException {
-		Cipher cipher = Cipher.getInstance("RSA/ECB/NoPadding");
+		Cipher cipher = Cipher.getInstance(ALGORITHM_ENVELOPE);
 		cipher.init(Cipher.DECRYPT_MODE, receiverPrivateKey);
 
 		byte[] decryptedKeyBytes = cipher.doFinal(encryptedSecretKeyBytes);
@@ -154,13 +160,13 @@ public class CryptoService {
 	 * ==========================================
 	 */
 
-	// 5. [회원가입] 발급된 사용자의 RSA 사설키를 패스워드 기반 대칭키로 암호화합니다.
+	// 7. [회원가입] 발급된 사용자의 RSA 사설키를 패스워드 기반 대칭키로 암호화합니다.
 	public byte[] encryptPrivateKey(PrivateKey privateKey, String password, User user)
 			throws NoSuchAlgorithmException, UnsupportedEncodingException, NoSuchPaddingException, InvalidKeyException,
 			IllegalBlockSizeException, BadPaddingException {
 		
 		// 1. 패스워드와 솔트를 결합하여 16Bytes 해시값 생성
-		MessageDigest md = MessageDigest.getInstance("MD5");
+		MessageDigest md = MessageDigest.getInstance(ALGORITHM_HASH);
 		md.update(password.getBytes());
 		md.update(user.getPasswordSalt());
 		byte[] hashSource = md.digest();
@@ -178,10 +184,10 @@ public class CryptoService {
 		return encryptedPrivateKey;
 	}
 	
-	// 6. [로그인 성공 시] DB에 저장되어 있던 암호화된 사설키 바이너리를 패스워드 기반 대칭키로 복호화하여 복구합니다.
+	// 8. [로그인 성공 시] DB에 저장되어 있던 암호화된 사설키 바이너리를 패스워드 기반 대칭키로 복호화하여 복구합니다.
 	public PrivateKey decryptPrivateKey(User user, String password) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidKeySpecException {
 		// 1. 패스워드와 솔트를 결합하여 16Bytes 해시값 생성
-		MessageDigest md = MessageDigest.getInstance("MD5");
+		MessageDigest md = MessageDigest.getInstance(ALGORITHM_HASH);
 		md.update(password.getBytes());
 		md.update(user.getPasswordSalt());
 		byte[] hashSource = md.digest();
@@ -206,31 +212,24 @@ public class CryptoService {
 	/* ==========================================
 	 *  E. 전자서명 생성 및 검증 (부인 방지용)
 	 *  ========================================== */
+	
+	// 9. 편지 내용에 대해 송신자의 RSA 사설키로 디지털 서명을 생성합니다.
+	public byte[] signData(byte[] data, PrivateKey senderPrivateKey) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+		Signature sig = Signature.getInstance(ALGORITHM_SIGN);
+		sig.initSign(senderPrivateKey);
+		sig.update(data);
+		byte[] signature = sig.sign();
 
-	/**
-	 * 7. 편지 내용(또는 암호문)에 대해 송신자의 RSA 사설키로 디지털 서명을 생성합니다.
-	 *
-	 * @param data             서명할 데이터 (평문 또는 암호화된 파일 경로/바이너리)
-	 * @param senderPrivateKey 송신자의 RSA 사설키 객체
-	 * @return 생성된 전자서명 바이너리 (Envelope의 digitalSignature 필드용)
-	 */
-	public byte[] signData(byte[] data, PrivateKey senderPrivateKey) throws Exception {
-		// 본문 구현 예정
-		// Signature 클래스 인스턴스를 활용한 서명 처리
-		return null;
+		return signature;
 	}
 
-	/**
-	 * 8. 수신 측에서 해당 편지가 변조되지 않았는지 송신자의 RSA 공개키로 서명을 검증합니다.
-	 *
-	 * @param data            원본 데이터
-	 * @param signature       검증할 전자서명 바이너리
-	 * @param senderPublicKey 송신자의 RSA 공개키 객체
-	 * @return 검증 성공 여부 (true/false)
-	 */
-	public boolean verifySignature(byte[] data, byte[] signature, PublicKey senderPublicKey) throws Exception {
-		// 본문 구현 예정
-		return false;
+	// 10. 수신 측에서 해당 편지가 변조되지 않았는지 송신자의 RSA 공개키로 서명을 검증합니다.
+	public boolean verifySignature(byte[] data, byte[] signature, PublicKey senderPublicKey) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+		Signature sig = Signature.getInstance(ALGORITHM_SIGN);
+		sig.initVerify(senderPublicKey);
+		sig.update(data);
+		
+		return sig.verify(signature);
 	}
 
 }
