@@ -1,5 +1,6 @@
 package security;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -47,11 +48,8 @@ public class CryptoService {
 	private static final int SIZE_P = 1024;
 	
 	private static final String ALGORITHM_SIGN = "SHA1withRSA";
-	private static final String ALGORITHM_ENVELOPE = "RSA/ECB/NoPadding";
+	private static final String ALGORITHM_ENVELOPE = "RSA";
 	private static final String ALGORITHM_HASH = "MD5";
-
-	// 싱글톤을 써야하는 이유
-	private int diaryCounter = 0;
 	
 	/*
 	 * ========================================== A. 키 생성
@@ -90,7 +88,7 @@ public class CryptoService {
 		byte[] byteText = plainText.getBytes("UTF-8");
 		byte[] encryptedBytes = cipher.doFinal(byteText);
 
-		String fullPath = "data/diaries/" + sender + "_" + reciver + "_" + diaryCounter + ".txt";
+		String fullPath = "data/diaries/" + sender + "_" + reciver + "_" + System.currentTimeMillis() + ".txt";
 
 		try (FileOutputStream fos = new FileOutputStream(fullPath)) {
 			fos.write(encryptedBytes);
@@ -111,13 +109,15 @@ public class CryptoService {
 
 		try (FileInputStream fis = new FileInputStream(fullPath);
 				CipherInputStream cis = new CipherInputStream(fis, cipher);
-				Scanner c = new Scanner(cis)) {
-			String decryted = new String();
-			while (c.hasNext()) {
-				decryted += c.nextLine();
-				decryted += "\n";
-			}
-			return decryted;
+				ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+			byte[] buffer = new byte[1024];
+	        int bytesRead;
+	        
+	        while ((bytesRead = cis.read(buffer)) != -1) {
+	            bos.write(buffer, 0, bytesRead);
+	        }
+	        
+	        return bos.toString("UTF-8");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -161,14 +161,14 @@ public class CryptoService {
 	 */
 
 	// 7. [회원가입] 발급된 사용자의 RSA 사설키를 패스워드 기반 대칭키로 암호화합니다.
-	public byte[] encryptPrivateKey(PrivateKey privateKey, String password, User user)
+	public byte[] encryptPrivateKey(PrivateKey privateKey, String password, byte[] passwordSalt)
 			throws NoSuchAlgorithmException, UnsupportedEncodingException, NoSuchPaddingException, InvalidKeyException,
 			IllegalBlockSizeException, BadPaddingException {
 		
 		// 1. 패스워드와 솔트를 결합하여 16Bytes 해시값 생성
 		MessageDigest md = MessageDigest.getInstance(ALGORITHM_HASH);
 		md.update(password.getBytes());
-		md.update(user.getPasswordSalt());
+		md.update(passwordSalt);
 		byte[] hashSource = md.digest();
 		
 		// 2. 비밀키 생성
