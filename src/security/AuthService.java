@@ -30,13 +30,13 @@ public class AuthService {
     }
 
     public boolean register(String id, String password) throws Exception {
-        MessageDigest md = MessageDigest.getInstance(ALGORITHM_HASH);
-        md.update(password.getBytes());
-        byte[] hashedPassword = md.digest();
-
         byte[] passwordSalt = new byte[16];
         SecureRandom rd = new SecureRandom();
         rd.nextBytes(passwordSalt);
+
+        MessageDigest md = MessageDigest.getInstance(ALGORITHM_HASH);
+        md.update(password.getBytes()); // (나중에 고칠 예정, 보고서용 허점) 해시할 때 Salt를 적용할 것
+        byte[] hashedPassword = md.digest();
 
         KeyPair keyPair = CryptoService.generateRSAKeyPair();
         PublicKey publicKey = keyPair.getPublic();
@@ -50,13 +50,17 @@ public class AuthService {
         return true;
     }
 
-    public boolean login(String id, String password) throws Exception {
+    public PrivateKey login(String id, String password) throws Exception {
         User user = db.findUserById(id);
         if (user == null) {
-            return false;
+            return null;
         }
         // 여기서 해시 검증 및 패스워드 기반 사설키 복구 로직 수행
-        return verifyPassword(password, user);
+        if (verifyPassword(password, user)) {
+            PrivateKey result = CryptoService.decryptPrivateKey(user, password);
+            return result;
+        }
+        return null;
     }
 
     private boolean verifyPassword(String password, User user) throws Exception {
