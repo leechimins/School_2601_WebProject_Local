@@ -7,8 +7,6 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 
-import javax.crypto.SecretKey;
-
 import data.LocalDB;
 import data.User;
 
@@ -29,12 +27,18 @@ public class AuthService {
         return db.findUserById(id) != null;
     }
 
-    public boolean register(String id, String password) throws Exception {
+    public boolean register(String id, String password) {
         byte[] passwordSalt = new byte[16];
         SecureRandom rd = new SecureRandom();
         rd.nextBytes(passwordSalt);
 
-        MessageDigest md = MessageDigest.getInstance(ALGORITHM_HASH);
+        MessageDigest md;
+        try {
+            md = MessageDigest.getInstance(ALGORITHM_HASH);
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            return false;
+        }
         md.update(password.getBytes());
         md.update(passwordSalt); // [보고서용 허점] 해시할 때 Salt를 적용할 것 (완료)
         byte[] hashedPassword = md.digest();
@@ -51,7 +55,7 @@ public class AuthService {
         return true;
     }
 
-    public PrivateKey login(String id, String password) throws Exception {
+    public PrivateKey login(String id, String password) {
         User user = db.findUserById(id);
         if (user == null) {
             return null;
@@ -64,12 +68,17 @@ public class AuthService {
         return null;
     }
 
-    private boolean verifyPassword(String password, User user) throws Exception {
-        MessageDigest md = MessageDigest.getInstance(ALGORITHM_HASH);
-        md.update(password.getBytes());
-        byte[] hashedPassword = md.digest();
-        if (MessageDigest.isEqual(user.getHashedPassword(), hashedPassword)) {
-            return true;
+    private boolean verifyPassword(String password, User user) {
+        try {
+            MessageDigest md = MessageDigest.getInstance(ALGORITHM_HASH);
+            md.update(password.getBytes());
+            md.update(user.getPasswordSalt());
+            byte[] hashedPassword = md.digest();
+            if (MessageDigest.isEqual(user.getHashedPassword(), hashedPassword)) {
+                return true;
+            }
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
         }
         return false;
     }
