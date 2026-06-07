@@ -35,7 +35,8 @@ public class AuthService {
         rd.nextBytes(passwordSalt);
 
         MessageDigest md = MessageDigest.getInstance(ALGORITHM_HASH);
-        md.update(password.getBytes()); // (나중에 고칠 예정, 보고서용 허점) 해시할 때 Salt를 적용할 것
+        md.update(password.getBytes());
+        md.update(passwordSalt); // [보고서용 허점] 해시할 때 Salt를 적용할 것 (완료)
         byte[] hashedPassword = md.digest();
 
         KeyPair keyPair = CryptoService.generateRSAKeyPair();
