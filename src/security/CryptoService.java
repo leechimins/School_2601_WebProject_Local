@@ -188,29 +188,35 @@ public class CryptoService {
 
 	// 8. [로그인 성공 시] DB에 저장되어 있던 암호화된 사설키 바이너리를 패스워드 기반 대칭키로 복호화하여 복구합니다.
 	public static PrivateKey decryptPrivateKey(User user, String password)
-			throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException,
-			BadPaddingException, InvalidKeySpecException {
-		// 1. 패스워드와 솔트를 결합하여 16Bytes 해시값 생성
-		MessageDigest md = MessageDigest.getInstance(ALGORITHM_HASH);
-		md.update(password.getBytes());
-		md.update(user.getPasswordSalt());
-		byte[] hashSource = md.digest();
+			throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException {
 
-		// 2. 비밀키 생성
-		SecretKeySpec passwordBasedKey = new SecretKeySpec(hashSource, ALGORITHM_S);
+		try {
+			// 1. 패스워드와 솔트를 결합하여 16Bytes 해시값 생성
+			MessageDigest md = MessageDigest.getInstance(ALGORITHM_HASH);
+			md.update(password.getBytes());
+			md.update(user.getPasswordSalt());
+			byte[] hashSource = md.digest();
 
-		// 3. 비밀키로 사설키 복호화
-		Cipher cipher = Cipher.getInstance(ALGORITHM_S);
-		cipher.init(Cipher.DECRYPT_MODE, passwordBasedKey);
+			// 2. 비밀키 생성
+			SecretKeySpec passwordBasedKey = new SecretKeySpec(hashSource, ALGORITHM_S);
 
-		byte[] decryptedKeyBytes = cipher.doFinal(user.getEncryptedPrivateKey());
+			// 3. 비밀키로 사설키 복호화
+			Cipher cipher = Cipher.getInstance(ALGORITHM_S);
+			cipher.init(Cipher.DECRYPT_MODE, passwordBasedKey);
 
-		// 4. 복호화한 배열을 사설키로 복구
-		PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(decryptedKeyBytes);
-		KeyFactory keyFactory = KeyFactory.getInstance(ALGORITHM_P);
-		PrivateKey privateKey = keyFactory.generatePrivate(keySpec);
+			byte[] decryptedKeyBytes = cipher.doFinal(user.getEncryptedPrivateKey());
 
-		return privateKey;
+			// 4. 복호화한 배열을 사설키로 복구
+			PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(decryptedKeyBytes);
+			KeyFactory keyFactory = KeyFactory.getInstance(ALGORITHM_P);
+			PrivateKey privateKey = keyFactory.generatePrivate(keySpec);
+
+			return privateKey;
+		} catch (BadPaddingException | InvalidKeySpecException e) {
+			// 패스워드가 틀린 경우
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	/*

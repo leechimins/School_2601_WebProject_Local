@@ -50,7 +50,7 @@ public class AuthService {
         return true;
     }
 
-    public boolean login(String id, String password) {
+    public boolean login(String id, String password) throws Exception {
         User user = db.findUserById(id);
         if (user == null) {
             return false;
@@ -59,8 +59,13 @@ public class AuthService {
         return verifyPassword(password, user);
     }
 
-    private boolean verifyPassword(String password, User user) {
-        // 해시 및 솔트 검증 로직 구현부
-        return true;
+    private boolean verifyPassword(String password, User user) throws Exception {
+        MessageDigest md = MessageDigest.getInstance(ALGORITHM_HASH);
+        md.update(password.getBytes());
+        byte[] hashedPassword = md.digest();
+        if (MessageDigest.isEqual(user.getHashedPassword(), hashedPassword)) {
+            return true;
+        }
+        return false;
     }
 }

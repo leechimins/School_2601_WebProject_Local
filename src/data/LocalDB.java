@@ -83,7 +83,7 @@ public class LocalDB {
             oos.flush();
             return true;
         } catch (IOException e) {
-            System.err.println("[오류] 파일 저장 실패 (" + filePath + "): " + e.getMessage());
+            System.out.println("[오류] 파일 저장 실패 (" + filePath + "): ");
             return false;
         }
     }

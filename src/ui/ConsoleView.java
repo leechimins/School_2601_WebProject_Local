@@ -4,7 +4,9 @@ public class ConsoleView {
 
 	private static final ConsoleView instance = new ConsoleView();
 
-	private ConsoleView() { }
+	private ConsoleView() {
+	}
+
 	public static ConsoleView getInstance() {
 		return instance;
 	}
@@ -17,30 +19,30 @@ public class ConsoleView {
 
 	public void printMenu(Menu type, String userName) {
 		switch (type) {
-		case AUTH:
-			System.out.print(auth);
-			break;
+			case AUTH:
+				System.out.print(auth);
+				break;
 
-		case MAIN:
-			// 문자열 결합 및 세션 정보 동적 출력
-			System.out.print(main1 + userName + main2);
-			break;
+			case MAIN:
+				// 문자열 결합 및 세션 정보 동적 출력
+				System.out.print(main1 + userName + main2);
+				break;
 
-		case WRITE:
-			System.out.print(write1);
-			break;
+			case WRITE:
+				System.out.print(write1);
+				break;
 
-		case INBOX:
-			System.out.print(inbox1);
-			break;
+			case INBOX:
+				System.out.print(inbox1);
+				break;
 
-		case READ:
-			System.out.print(read1);
-			break;
+			case READ:
+				System.out.print(read1);
+				break;
 
-		default:
-			// 예측하지 못한 분기 진입 차단 (In-Band Error 예방)
-			throw new IllegalArgumentException("[오류] 잘못된 메뉴 영역입니다.");
+			default:
+				// 예측하지 못한 분기 진입 차단 (In-Band Error 예방)
+				throw new IllegalArgumentException("[오류] 잘못된 메뉴 영역입니다.");
 		}
 	}
 
