@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -43,6 +44,14 @@ public class LocalDB {
      */
     public User findUserById(String id) {
         return userMap.get(id);
+    }
+
+    public PublicKey findPublicKeyById(String id) {
+        User user = userMap.get(id);
+        if (user == null) {
+            return null;
+        }
+        return user.getPublicKey();
     }
 
     public boolean addUser(User user) {

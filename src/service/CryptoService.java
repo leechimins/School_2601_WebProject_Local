@@ -83,7 +83,7 @@ public class CryptoService {
 	 */
 
 	// 3. 편지 평문 본문을 일회성 AES 비밀키를 사용하여 암호화합니다.
-	public static String encryptDiaryAndSave(String plainText, SecretKey secretKey, String sender, String reciver) {
+	public static String encryptLetterAndSave(String plainText, SecretKey secretKey, String sender, String reciver) {
 		try {
 			Cipher cipher = Cipher.getInstance(ALGORITHM_S);
 			cipher.init(Cipher.ENCRYPT_MODE, secretKey);
@@ -91,7 +91,7 @@ public class CryptoService {
 			byte[] byteText = plainText.getBytes("UTF-8");
 			byte[] encryptedBytes = cipher.doFinal(byteText);
 
-			String fullPath = "data/diaries/" + sender + "_" + reciver + "_" + System.currentTimeMillis() + ".txt";
+			String fullPath = "data/letters/" + sender + "_" + reciver + "_" + System.currentTimeMillis() + ".txt";
 
 			try (FileOutputStream fos = new FileOutputStream(fullPath)) {
 				fos.write(encryptedBytes);

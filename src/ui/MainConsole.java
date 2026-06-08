@@ -37,7 +37,6 @@ public class MainConsole {
     }
 
     public static void main(String[] args) {
-        AuthService authService = AuthService.getInstance();
         Scanner sc = new Scanner(System.in);
         Menu currentMenu = Menu.AUTH;
 
