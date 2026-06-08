@@ -17,7 +17,7 @@ public class ConsoleView {
 	}
 
 	public static void printMainMenu(String userName) {
-		System.out.print(main1 + userName + main2);
+		System.out.print(main[0] + userName + main[1]);
 	}
 
 	public static void printWritePrompt() {
@@ -31,21 +31,19 @@ public class ConsoleView {
 	// 성공 화면 공통 출력 함수
 	private static void printSuccess(String title, String... steps) {
 		System.out.println("======================================================================");
-		System.out.println("   [✔ " + title + " SUCCESS ]");
+		System.out.println("   [✅ " + title + " SUCCESS ]");
 		System.out.println("----------------------------------------------------------------------");
-		System.out.println("[✔ PROCESS SUCCESS]");
 		for (int i = 0; i < steps.length; i++) {
-			System.out.println((i + 1) + ". " + steps[i]);
+			System.out.println("   " + (i + 1) + ". " + steps[i]);
 		}
 		System.out.println("======================================================================\n");
 	}
 
 	// 실패 화면 공통 출력 함수
 	public static void printFail(String title, String reason) {
-		System.out.println("\n======================================================================");
-		System.out.println("[❌ ERROR : " + title + " ]");
-		System.out.println("----------------------------------------------------------------------");
-		System.out.println("▶ 사유: " + reason);
+		System.out.println("======================================================================");
+		System.out.println("   [❌ ERROR : " + title + " ]");
+		System.out.println("   ▶ 사유: " + reason);
 		System.out.println("======================================================================\n");
 	}
 
@@ -88,11 +86,12 @@ public class ConsoleView {
 		System.out.print(inbox1);
 		if (envelopes.isEmpty()) {
 			System.out.println("   [안내] 수신된 편지가 없습니다.");
+			System.out.println("======================================================================\n");
 			return false;
 		} else {
 			for (int i = 0; i < envelopes.size(); i++) {
 				Envelope env = envelopes.get(i);
-				System.out.printf("   [%d] ✉ 발신자: %-10s | 경로: %s\n",
+				System.out.printf("   [%d] ✉️ 발신자: %-10s | 경로: %s\n",
 						(i + 1), env.getSender(), env.getEncryptedFilePath());
 			}
 		}
@@ -129,9 +128,7 @@ public class ConsoleView {
 			▶ 안내: 처음 접속하는 ID는 자동으로 회원가입 됩니다.
 			▶ 사용할 사용자 ID 입력: """, "▶ 비밀번호: " };
 
-	private static final String main1 = """
-			[ CURRENT SESSION : """;
-	private static final String main2 = """
+	private static final String[] main = { "[ CURRENT SESSION : ", """
 			님 로그인 중 ]
 			======================================================================
 			   1. 📝 편지 쓰기\t(일회성 대칭키 생성 및 전자봉투 송신)
@@ -140,7 +137,7 @@ public class ConsoleView {
 			   4. ❌ 시스템 종료\t(안전하게 프로그램 마감)
 			======================================================================
 
-			▶ 수행할 작업 번호를 선택하세요: """;
+			▶ 수행할 작업 번호를 선택하세요: """ };
 
 	private static final String write1 = """
 			======================================================================
@@ -167,13 +164,13 @@ public class ConsoleView {
 			======================================================================
 			   [ READ WORKSPACE : 전자봉투 검증 및 복호화 완료 ]
 			======================================================================
-			 ✉ 발신자(Sender)\t\t: """;
+			✉️ 발신자(Sender)\t: """;
 	private static final String read2 = """
 			🔒 수신자(Receiver)\t: """;
 	private static final String read3 = """
 			----------------------------------------------------------------------
-			 📝 일기 본문 (Decrypted Text) :
-			 """;
+			📝 일기 본문 (Decrypted Text) :
+			""";
 	private static final String read4 = """
 			======================================================================
 			▶ 편지를 쓰려면 W, 목록으로 가려면 L, 메인으로 돌아가려면 M을 입력하세요: """;

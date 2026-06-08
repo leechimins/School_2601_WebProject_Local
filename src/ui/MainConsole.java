@@ -19,7 +19,7 @@ public class MainConsole {
     private static Envelope selectedEnvelope = null;
 
     enum Menu {
-        AUTH(3), MAIN(11), WRITE(1), INBOX(2), READ(12), LOGOUT(13), EXIT(4);
+        AUTH(13), MAIN(10), WRITE(1), INBOX(2), READ(12), LOGOUT(3), EXIT(4);
 
         private final int value;
 
