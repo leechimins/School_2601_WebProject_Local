@@ -1,4 +1,4 @@
-package security;
+package service;
 
 import java.security.KeyPair;
 import java.security.MessageDigest;
@@ -27,7 +27,7 @@ public class AuthService {
         return db.findUserById(id) != null;
     }
 
-    public boolean register(String id, String password) {
+    public PrivateKey register(String id, String password) {
         byte[] passwordSalt = new byte[16];
         SecureRandom rd = new SecureRandom();
         rd.nextBytes(passwordSalt);
@@ -37,7 +37,7 @@ public class AuthService {
             md = MessageDigest.getInstance(ALGORITHM_HASH);
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
-            return false;
+            return null;
         }
         md.update(password.getBytes());
         md.update(passwordSalt); // [보고서용 허점] 해시할 때 Salt를 적용할 것 (완료)
@@ -52,7 +52,7 @@ public class AuthService {
         User user = new User(id, hashedPassword, passwordSalt, publicKey, encryptedPrivateKey);
         db.addUser(user);
 
-        return true;
+        return privateKey;
     }
 
     public PrivateKey login(String id, String password) {

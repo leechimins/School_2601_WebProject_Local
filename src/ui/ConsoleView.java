@@ -1,52 +1,104 @@
 package ui;
 
-public class ConsoleView {
+import java.util.ArrayList;
+import data.Envelope;
 
-	private static final ConsoleView instance = new ConsoleView();
+public class ConsoleView {
 
 	private ConsoleView() {
 	}
 
-	public static ConsoleView getInstance() {
-		return instance;
+	public static void printStart() {
+		System.out.print(start);
 	}
 
-	private String userName;
-
-	public enum Menu {
-		AUTH, MAIN, WRITE, INBOX, READ
+	public static void printAuthMenu(int step) {
+		System.out.print(auth[step]);
 	}
 
-	public void printMenu(Menu type, String userName) {
-		switch (type) {
-			case AUTH:
-				System.out.print(auth);
-				break;
+	public static void printMainMenu(String userName) {
+		System.out.print(main1 + userName + main2);
+	}
 
-			case MAIN:
-				// 문자열 결합 및 세션 정보 동적 출력
-				System.out.print(main1 + userName + main2);
-				break;
+	public static void printWritePrompt() {
+		System.out.print(write1);
+	}
 
-			case WRITE:
-				System.out.print(write1);
-				break;
+	public static void printWriteContentPrompt() {
+		System.out.print(write2);
+	}
 
-			case INBOX:
-				System.out.print(inbox1);
-				break;
-
-			case READ:
-				System.out.print(read1);
-				break;
-
-			default:
-				// 예측하지 못한 분기 진입 차단 (In-Band Error 예방)
-				throw new IllegalArgumentException("[오류] 잘못된 메뉴 영역입니다.");
+	// 성공 화면 공통 출력 함수
+	private static void printSuccess(String title, String... steps) {
+		System.out.println("======================================================================");
+		System.out.println("   [✔ " + title + " SUCCESS ]");
+		System.out.println("----------------------------------------------------------------------");
+		System.out.println("[✔ PROCESS SUCCESS]");
+		for (int i = 0; i < steps.length; i++) {
+			System.out.println((i + 1) + ". " + steps[i]);
 		}
+		System.out.println("======================================================================\n");
 	}
 
-	private final String auth = """
+	// 실패 화면 공통 출력 함수
+	public static void printFail(String title, String reason) {
+		System.out.println("\n======================================================================");
+		System.out.println("   [❌ FAIL : " + title + " ]");
+		System.out.println("----------------------------------------------------------------------");
+		System.out.println("   ▶ 사유: " + reason);
+		System.out.println("======================================================================\n");
+	}
+
+	public static void printLoginSuccess() {
+		printSuccess("LOGIN",
+				"LocalDB.findUserById() -> 로컬 데이터베이스에서 사용자 정보 로드 완료.",
+				"AuthService.verifyPassword() -> MessageDigest.isEqual()을 통한 해시 일치 여부 확인 완료.",
+				"CryptoService.decryptPrivateKey() -> 사용자 사설키(PrivateKey) 복구 완료.",
+				"MainConsole 세션 내 개인키 객체 적재 완료.");
+	}
+
+	public static void printRegisterSuccess() {
+		printSuccess("REGISTER",
+				"CryptoService.generateRSAKeyPair() -> RSA 1024-bit 공개키 및 사설키 쌍 자동 생성 완료.",
+				"SecureRandom & MessageDigest.getInstance(\"MD5\") -> 패스워드 기반 16바이트 Salt 생성 및 해싱 완료.",
+				"CryptoService.encryptPrivateKey() -> 솔팅된 패스워드로 사설키 암호화 완료.",
+				"LocalDB.addUser() -> 로컬 디스크에 회원 정보 저장 완료.");
+	}
+
+	public static void printWriteSuccess() {
+		printSuccess("WRITE & SEAL",
+				"일회성 AES 비밀키(SecretKey) 동적 생성 완료.",
+				"수신자의 RSA Public Key를 로컬 디스크에서 획득 완료.",
+				"본문 암호문 + 암호화된 AES 키 + IV 결합 완료.",
+				"전자봉투(Digital Envelope) 인메모리 DB 업로드 완료!");
+	}
+
+	public static void printInboxList(ArrayList<Envelope> envelopes) {
+		System.out.print(inbox1);
+		if (envelopes.isEmpty()) {
+			System.out.println("   [안내] 수신된 편지가 없습니다.");
+		} else {
+			for (int i = 0; i < envelopes.size(); i++) {
+				Envelope env = envelopes.get(i);
+				System.out.printf("   [%d] ✉ 발신자: %-10s | 경로: %s\n",
+						(i + 1), env.getSender(), env.getEncryptedFilePath());
+			}
+		}
+		System.out.print(inbox2);
+	}
+
+	public static void printReadWorkspace(data.Envelope envelope, String decryptedText) {
+		System.out.print(read1 + envelope.getSender() + "\n");
+		System.out.print(read2 + envelope.getReceiver() + "\n");
+		System.out.print(read3 + decryptedText + "\n");
+		System.out.print(read4);
+	}
+
+	// ==========================================
+	// UI 문자열 템플릿
+	// ==========================================
+
+	private static final String start = """
 			======================================================================
 			     ██████╗  ██████╗ ██████╗  ██████╗ ██████╗ ██████╗ ███╗   ██╗
 			     ██╔══██╗██╔═══██╗██╔══██╗██╔════╝██╔═══██╗██╔══██╗████╗  ██║
@@ -58,13 +110,15 @@ public class ConsoleView {
 			                     [ SYSTEM : EXCHANGE DIARY ]
 			======================================================================
 
-			▶ 안내: 처음 접속하는 ID는 자동으로 암호화 키 파일이 생성됩니다.
-			▶ 사용할 사용자 ID 입력: """;
+			""";
 
-	private final String main1 = """
-			======================================================================
-			   [ CURRENT SESSION : """;
-	private final String main2 = """
+	private static final String[] auth = { """
+			▶ 안내: 처음 접속하는 ID는 자동으로 회원가입 됩니다.
+			▶ 사용할 사용자 ID 입력: """, "▶ 비밀번호: " };
+
+	private static final String main1 = """
+			[ CURRENT SESSION : """;
+	private static final String main2 = """
 			님 로그인 중 ]
 			======================================================================
 			   1. 📝 편지 쓰기\t(일회성 대칭키 생성 및 전자봉투 송신)
@@ -75,48 +129,39 @@ public class ConsoleView {
 
 			▶ 수행할 작업 번호를 선택하세요: """;
 
-	private final String write1 = """
+	private static final String write1 = """
 			======================================================================
 			   [ WRITE WORKSPACE : 보안 교환일기 작성 및 봉인 ]
 			======================================================================
 
 			▶ 수신자 ID 입력 (상대방의 RSA 공개키가 필요합니다): """;
-	private final String write2 = """
+	private static final String write2 = """
 			----------------------------------------------------------------------
 			▶ 일기 내용 입력 (AES-128-CBC 모드로 자동 암호화됩니다):
 			""";
-	private final String write3 = """
-			----------------------------------------------------------------------
-			[✔ PROCESS SUCCESS]
-			1. 일회성 AES 비밀키(SecretKey) 동적 생성 완료.
-			2. 수신자의 RSA Public Key를 로컬 디스크에서 획득 완료.
-			3. 본문 암호문 + 암호화된 AES 키 + IV 결합 완료.
-			4. 전자봉투(Digital Envelope) 인메모리 DB 업로드 완료!
-			======================================================================
-			""";
 
-	private final String inbox1 = """
+	private static final String inbox1 = """
 			======================================================================
 			   [ INBOX : 수신된 전자봉투 보관함 ]
 			======================================================================
 
 			""";
-	private final String inbox2 = """
+	private static final String inbox2 = """
 			----------------------------------------------------------------------
 			▶ 복호화하여 상세히 읽을 편지 번호를 입력하세요 (이전 메뉴는 0): """;
 
-	private final String read1 = """
+	private static final String read1 = """
 			======================================================================
 			   [ READ WORKSPACE : 전자봉투 검증 및 복호화 완료 ]
 			======================================================================
 			 ✉ 발신자(Sender)\t\t: """;
-	private final String read2 = """
+	private static final String read2 = """
 			🔒 수신자(Receiver)\t: """;
-	private final String read3 = """
+	private static final String read3 = """
 			----------------------------------------------------------------------
 			 📝 일기 본문 (Decrypted Text) :
 			 """;
-	private final String read4 = """
+	private static final String read4 = """
 			======================================================================
 			▶ [답장 보내기]를 원하시면 R을, 목록으로 가려면 L를 누르세요: """;
 }

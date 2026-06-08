@@ -28,7 +28,7 @@ src/
 │   ├── MainConsole.java   # CLI 전체 실행 루프 및 제어 흐름 (컨트롤러)
 │   └── ConsoleView.java   # 메뉴 템플릿, 텍스트 아트(ASCII ART) 상수 및 출력 전담
 │
-├── security/
+├── service/
 │   ├── AuthService.java   # 회원가입/로그인 세션 제어 및 패스워드 기반 사설키 복구
 │   └── CryptoService.java # AES 암·복호화, RSA 암·복호화, SHA256withRSA 전자서명/검증 (싱글톤)
 │
