@@ -43,9 +43,9 @@ public class ConsoleView {
 	// 실패 화면 공통 출력 함수
 	public static void printFail(String title, String reason) {
 		System.out.println("\n======================================================================");
-		System.out.println("   [❌ FAIL : " + title + " ]");
+		System.out.println("[❌ ERROR : " + title + " ]");
 		System.out.println("----------------------------------------------------------------------");
-		System.out.println("   ▶ 사유: " + reason);
+		System.out.println("▶ 사유: " + reason);
 		System.out.println("======================================================================\n");
 	}
 
@@ -73,10 +73,22 @@ public class ConsoleView {
 				"전자봉투(Digital Envelope) 인메모리 DB 업로드 완료!");
 	}
 
-	public static void printInboxList(ArrayList<Envelope> envelopes) {
+	public static void printLogoutSuccess() {
+		printSuccess("LOGOUT",
+				"MainConsole 세션 내 개인키 객체 파기 완료.",
+				"현재 사용자의 인증 세션 종료.");
+	}
+
+	public static void printExitSuccess() {
+		printSuccess("EXIT",
+				"안전하게 프로그램을 종료합니다.");
+	}
+
+	public static boolean printInboxList(ArrayList<Envelope> envelopes) {
 		System.out.print(inbox1);
 		if (envelopes.isEmpty()) {
 			System.out.println("   [안내] 수신된 편지가 없습니다.");
+			return false;
 		} else {
 			for (int i = 0; i < envelopes.size(); i++) {
 				Envelope env = envelopes.get(i);
@@ -85,6 +97,7 @@ public class ConsoleView {
 			}
 		}
 		System.out.print(inbox2);
+		return true;
 	}
 
 	public static void printReadWorkspace(data.Envelope envelope, String decryptedText) {
@@ -163,5 +176,5 @@ public class ConsoleView {
 			 """;
 	private static final String read4 = """
 			======================================================================
-			▶ [답장 보내기]를 원하시면 R을, 목록으로 가려면 L를 누르세요: """;
+			▶ 편지를 쓰려면 W, 목록으로 가려면 L, 메인으로 돌아가려면 M을 입력하세요: """;
 }

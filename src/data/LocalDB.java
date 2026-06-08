@@ -30,6 +30,12 @@ public class LocalDB {
             file2.getParentFile().mkdirs();
         }
 
+        // 편지 저장 경로 생성
+        File letterDir = new File("data/letters");
+        if (!letterDir.exists()) {
+            letterDir.mkdirs();
+        }
+
         loadAll();
     }
 
