@@ -14,7 +14,7 @@ public class AuthService {
     private static final AuthService instance = new AuthService();
     private static final LocalDB db = LocalDB.getInstance();
 
-    private static final String ALGORITHM_HASH = "MD5";
+    private static final String ALGORITHM_HASH = "SHA-256";
 
     private AuthService() {
     }
@@ -40,14 +40,14 @@ public class AuthService {
             return null;
         }
         md.update(password.getBytes());
-        md.update(passwordSalt); // [보고서용 허점] 해시할 때 Salt를 적용할 것 (완료)
+        md.update(passwordSalt);
         byte[] hashedPassword = md.digest();
 
         KeyPair keyPair = CryptoService.generateRSAKeyPair();
         PublicKey publicKey = keyPair.getPublic();
         PrivateKey privateKey = keyPair.getPrivate();
 
-        byte[] encryptedPrivateKey = CryptoService.encryptPrivateKey(privateKey, password, passwordSalt);
+        byte[] encryptedPrivateKey = CryptoService.encryptPrivateKey(privateKey, password.getBytes(), passwordSalt);
 
         User user = new User(id, hashedPassword, passwordSalt, publicKey, encryptedPrivateKey);
         db.addUser(user);
@@ -61,17 +61,17 @@ public class AuthService {
             return null;
         }
         // 여기서 해시 검증 및 패스워드 기반 사설키 복구 로직 수행
-        if (verifyPassword(password, user)) {
-            PrivateKey result = CryptoService.decryptPrivateKey(user, password);
+        if (verifyPassword(password.getBytes(), user)) {
+            PrivateKey result = CryptoService.decryptPrivateKey(user, password.getBytes());
             return result;
         }
         return null;
     }
 
-    private boolean verifyPassword(String password, User user) {
+    private boolean verifyPassword(byte[] password, User user) {
         try {
             MessageDigest md = MessageDigest.getInstance(ALGORITHM_HASH);
-            md.update(password.getBytes());
+            md.update(password);
             md.update(user.getPasswordSalt());
             byte[] hashedPassword = md.digest();
             if (MessageDigest.isEqual(user.getHashedPassword(), hashedPassword)) {

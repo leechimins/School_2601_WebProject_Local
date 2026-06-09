@@ -12,6 +12,19 @@ import service.AuthService;
 import service.LetterService;
 
 public class MainConsole {
+    public static final String RESET = "\u001B[0m";
+    public static final String COLOR = "\u001B[36m";
+
+    private static Scanner sc = new Scanner(System.in);
+
+    public static String colorInput(String prompt) {
+        System.out.print(prompt);
+        String userInput = sc.nextLine().trim();
+        System.out.print("\u001B[1A\u001B[2K");
+        System.out.println(prompt + COLOR + userInput + RESET);
+
+        return userInput;
+    }
 
     private static User currentUser = null;
     private static PrivateKey privateKey = null;
@@ -42,7 +55,6 @@ public class MainConsole {
     }
 
     public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
         Menu currentMenu = Menu.AUTH;
 
         ConsoleView.printStart();
@@ -52,11 +64,11 @@ public class MainConsole {
                 case AUTH:
                     currentUser = null;
                     privateKey = null;
-                    currentMenu = auth(sc);
+                    currentMenu = auth();
                     break;
                 case MAIN:
                     ConsoleView.printMainMenu(currentUser.getId());
-                    String choice = sc.nextLine().trim();
+                    String choice = colorInput(ConsoleView.getMainMenuPrompt());
                     try {
                         currentMenu = Menu.fromValue(Integer.parseInt(choice));
                     } catch (NumberFormatException e) {
@@ -65,13 +77,13 @@ public class MainConsole {
                     }
                     break;
                 case WRITE:
-                    currentMenu = write(sc);
+                    currentMenu = write();
                     break;
                 case INBOX:
-                    currentMenu = inbox(sc);
+                    currentMenu = inbox();
                     break;
                 case READ:
-                    currentMenu = read(sc);
+                    currentMenu = read();
                     break;
                 case LOGOUT:
                     ConsoleView.printLogoutSuccess();
@@ -92,19 +104,19 @@ public class MainConsole {
         ConsoleView.printExitSuccess();
     }
 
-    private static Menu auth(Scanner sc) {
+    private static Menu auth() {
         AuthService authService = AuthService.getInstance();
         String id = null;
         String pw = null;
 
+        ConsoleView.printAuthGuidance();
+
         do {
-            ConsoleView.printAuthMenu(0); // "▶ 사용할 사용자 ID 입력: " 출력
-            id = sc.nextLine().trim();
+            id = colorInput(ConsoleView.getAuthPrompt(0));
         } while (id.isEmpty());
 
         do {
-            ConsoleView.printAuthMenu(1); // "▶ 비밀번호: " 출력
-            pw = sc.nextLine().trim();
+            pw = colorInput(ConsoleView.getAuthPrompt(1));
         } while (pw.isEmpty());
 
         if (authService.isUserExists(id)) {
@@ -131,15 +143,14 @@ public class MainConsole {
         return Menu.AUTH;
     }
 
-    private static Menu write(Scanner sc) {
-        ConsoleView.printWritePrompt();
-        String receiverId = sc.nextLine().trim();
+    private static Menu write() {
+        ConsoleView.printWriteHeader();
+        String receiverId = colorInput(ConsoleView.getWritePrompt1());
         if (receiverId.isEmpty()) {
             return Menu.MAIN;
         }
 
-        ConsoleView.printWriteContentPrompt();
-        String content = sc.nextLine().trim();
+        String content = colorInput(ConsoleView.getWritePrompt2());
         if (content.isEmpty()) {
             return Menu.MAIN;
         }
@@ -153,14 +164,14 @@ public class MainConsole {
         return Menu.MAIN;
     }
 
-    private static Menu inbox(Scanner sc) {
+    private static Menu inbox() {
         ArrayList<Envelope> envelopes = db.findEnvelopesByReceiver(currentUser.getId());
         boolean hasEnvelopes = ConsoleView.printInboxList(envelopes);
         if (!hasEnvelopes) {
             return Menu.MAIN;
         }
 
-        String input = sc.nextLine().trim();
+        String input = colorInput(ConsoleView.getInboxPrompt());
         if (input.equals("0")) {
             return Menu.MAIN;
         }
@@ -179,7 +190,7 @@ public class MainConsole {
         return Menu.MAIN;
     }
 
-    private static Menu read(Scanner sc) {
+    private static Menu read() {
         if (selectedEnvelope == null) {
             ConsoleView.printFail("편지 선택 오류", "선택된 편지가 없습니다.");
             return Menu.INBOX;
@@ -193,11 +204,13 @@ public class MainConsole {
 
         if (!result.isSignatureVerified()) {
             ConsoleView.printFail("전자서명 검증 실패", "발신자 서명 검증에 실패했습니다! 본문이 변조되었을 위험이 있습니다.");
+        } else {
+            ConsoleView.printReadSuccess();
         }
 
         ConsoleView.printReadWorkspace(selectedEnvelope, result.getContent());
 
-        String choice = sc.nextLine().trim().toUpperCase();
+        String choice = colorInput(ConsoleView.getReadPrompt()).toUpperCase();
         switch (choice) {
             case "W":
                 return Menu.WRITE;

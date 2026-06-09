@@ -30,7 +30,6 @@ public class LocalDB {
             file2.getParentFile().mkdirs();
         }
 
-        // 편지 저장 경로 생성
         File letterDir = new File("data/letters");
         if (!letterDir.exists()) {
             letterDir.mkdirs();
@@ -43,11 +42,9 @@ public class LocalDB {
         return instance;
     }
 
-    /*
-     * ==========================================
-     * A. 사용자 관리
-     * ==========================================
-     */
+    // ==========================================
+    // A. 사용자 관리
+    // ==========================================
     public User findUserById(String id) {
         return userMap.get(id);
     }
@@ -65,11 +62,9 @@ public class LocalDB {
         return saveFile(USER_DB_PATH, userMap);
     }
 
-    /*
-     * ==========================================
-     * B. 편지 관리
-     * ==========================================
-     */
+    // ==========================================
+    // B. 편지 관리
+    // ==========================================
     public ArrayList<Envelope> findEnvelopesByReceiver(String receiverId) {
         ArrayList<Envelope> result = new ArrayList<>();
         for (Envelope env : envelopeMap.values()) {
@@ -85,11 +80,9 @@ public class LocalDB {
         return saveFile(ENVELOPE_DB_PATH, envelopeMap);
     }
 
-    /*
-     * ==========================================
-     * C. 파일 입출력
-     * ==========================================
-     */
+    // ==========================================
+    // C. 파일 입출력
+    // ==========================================
     private boolean saveFile(String filePath, Object data) {
         File file = new File(filePath);
         try (FileOutputStream fos = new FileOutputStream(file);
@@ -103,8 +96,8 @@ public class LocalDB {
         }
     }
 
-    private void loadAll() {
-        // 1. 유저 로드
+    private boolean loadAll() {
+        // 1. 유저 데이터 로드
         File userFile = new File(USER_DB_PATH);
         if (userFile.exists()) {
             try (FileInputStream fis = new FileInputStream(userFile);
@@ -118,7 +111,7 @@ public class LocalDB {
             this.userMap = new HashMap<>();
         }
 
-        // 2. 편지 봉투 로드
+        // 2. 편지 봉투 데이터 로드
         File envFile = new File(ENVELOPE_DB_PATH);
         if (envFile.exists()) {
             try (FileInputStream fis = new FileInputStream(envFile);
@@ -131,6 +124,7 @@ public class LocalDB {
         } else {
             this.envelopeMap = new HashMap<>();
         }
+        return true;
     }
 
 }

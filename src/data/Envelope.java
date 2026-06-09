@@ -39,5 +39,4 @@ public class Envelope implements Serializable {
 	public byte[] getSignature() {
 		return signature;
 	}
-
 }
